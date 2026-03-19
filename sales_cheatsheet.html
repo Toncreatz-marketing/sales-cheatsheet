@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sales Cheatsheet — Klantenlijst Kolommen</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f3;
+    color: #1a1a1a;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+  }
+  .page { max-width: 1100px; margin: 0 auto; }
+
+  /* Header */
+  .header { margin-bottom: 2rem; }
+  .header h1 { font-size: 22px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+  .header p { font-size: 14px; color: #666; }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 1.25rem;
+  }
+  .search {
+    flex: 1; min-width: 180px; padding: 7px 14px; font-size: 13px;
+    border-radius: 20px; border: 1px solid #ddd; background: #fff;
+    color: #1a1a1a; outline: none;
+  }
+  .search:focus { border-color: #185FA5; }
+  .pill {
+    padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid #ddd; background: #fff;
+    color: #555; transition: all 0.15s;
+  }
+  .pill:hover { border-color: #aaa; }
+  .pill.active { background: #185FA5; border-color: #185FA5; color: #fff; }
+
+  .count { font-size: 12px; color: #999; margin-bottom: 1rem; }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+
+  /* Card */
+  .card {
+    background: #fff; border: 1px solid #e8e8e6; border-radius: 12px;
+    padding: 14px 16px; transition: border-color 0.15s;
+  }
+  .card:hover { border-color: #bbb; }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .label { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+  .badge {
+    font-size: 10px; font-weight: 600; padding: 2px 9px;
+    border-radius: 10px; white-space: nowrap; flex-shrink: 0; margin-top: 1px;
+  }
+  .badge-bedrijf  { background: #E6F1FB; color: #0C447C; }
+  .badge-reviews  { background: #EAF3DE; color: #27500A; }
+  .badge-platform { background: #EEEDFE; color: #3C3489; }
+  .badge-score    { background: #FAEEDA; color: #633806; }
+  .badge-segment  { background: #FAECE7; color: #712B13; }
+  .badge-systeem  { background: #F1EFE8; color: #444441; }
+  .tech { font-size: 11px; font-family: 'SF Mono', Consolas, monospace; color: #aaa; margin-bottom: 6px; }
+  .desc { font-size: 13px; color: #444; line-height: 1.55; }
+  .tip { margin-top: 7px; font-size: 12px; color: #555; line-height: 1.5; }
+  .tip strong { color: #1a1a1a; font-weight: 600; }
+  .example {
+    margin-top: 8px; font-size: 11px; color: #999;
+    border-top: 1px solid #f0f0ee; padding-top: 7px;
+  }
+  .example span { color: #666; font-weight: 600; }
+  .empty { grid-column: 1/-1; text-align: center; padding: 2rem; color: #aaa; font-size: 14px; }
+
+  /* Footer */
+  .footer { margin-top: 2.5rem; text-align: center; font-size: 12px; color: #bbb; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>Sales cheatsheet — klantenlijst</h1>
+    <p>Uitleg van alle 25 kolommen in de klantenlijst. Filter op categorie of zoek op naam.</p>
+  </div>
+
+  <div class="filter-bar">
+    <input class="search" type="text" placeholder="Zoek kolom..." id="search" />
+    <button class="pill active" data-cat="all">Alles</button>
+    <button class="pill" data-cat="bedrijf">Bedrijf</button>
+    <button class="pill" data-cat="reviews">Reviews</button>
+    <button class="pill" data-cat="platform">Platform</button>
+    <button class="pill" data-cat="score">Prioriteit</button>
+    <button class="pill" data-cat="segment">Segment</button>
+    <button class="pill" data-cat="systeem">Systeem</button>
+  </div>
+  <div class="count" id="count">25 van 25 kolommen</div>
+  <div class="grid" id="grid"></div>
+
+  <div class="footer">Sales cheatsheet — gegenereerd voor intern gebruik</div>
+</div>
+
+<script>
+const cols = [
+  { tech:"company_domain_name", label:"Websitedomein", cat:"bedrijf", badge:"Bedrijf",
+    desc:"Het webadres van het restaurant, zonder 'https://'. Dit is de unieke sleutel waarmee het restaurant in de lijst wordt herkend — geen twee restaurants hebben hetzelfde domein.",
+    tip:"Handig als je snel wil opzoeken of een restaurant al bekend is.",
+    example:"lumbinirestaurant.nl" },
+  { tech:"company_name", label:"Bedrijfsnaam", cat:"bedrijf", badge:"Bedrijf",
+    desc:"De naam van het restaurant zoals die op Google staat. Dit is de naam die je gebruikt in communicatie.",
+    tip:"Gebruik dit als aanspreeknaam in e-mails of notities.",
+    example:"Lumbini Restaurant" },
+  { tech:"website_url", label:"Website", cat:"bedrijf", badge:"Bedrijf",
+    desc:"Het volledige webadres inclusief 'https://'. Klikbaar in de meeste tools.",
+    tip:"Klik hierop om de website van het restaurant direct te bekijken.",
+    example:"https://lumbinirestaurant.nl/" },
+  { tech:"city", label:"Stad", cat:"bedrijf", badge:"Bedrijf",
+    desc:"De stad waar het restaurant gevestigd is, zoals vermeld op Google.",
+    tip:"Filteren op regio of stad — handig voor route- en gebiedsindeling.",
+    example:"Amsterdam" },
+  { tech:"country", label:"Land", cat:"bedrijf", badge:"Bedrijf",
+    desc:"Het land van vestiging. In deze lijst zijn dit uitsluitend Nederlandse restaurants.",
+    tip:"",
+    example:"Netherlands" },
+  { tech:"full_address", label:"Volledig adres", cat:"bedrijf", badge:"Bedrijf",
+    desc:"Straatnaam, huisnummer en postcode van het restaurant zoals geregistreerd op Google.",
+    tip:"Gebruik dit voor bezoekplanning of om het restaurant op te zoeken op de kaart.",
+    example:"Amstel 32H, 1017 AB Amsterdam, Netherlands" },
+  { tech:"rating_oud", label:"Vorige Google-rating", cat:"reviews", badge:"Reviews",
+    desc:"De gemiddelde sterrenscore op Google bij de vorige meting. Schaal van 1 tot 5 sterren.",
+    tip:"Vergelijk met de huidige rating om te zien of de kwaliteitsbeleving stabiel blijft.",
+    example:"4,8" },
+  { tech:"reviews_oud", label:"Vorig aantal reviews", cat:"reviews", badge:"Reviews",
+    desc:"Het totale aantal Google-reviews dat het restaurant had bij de vorige meting.",
+    tip:"Trek dit af van het huidige aantal om de groei te berekenen — of zie 'Review-groei'.",
+    example:"1.582 reviews" },
+  { tech:"rating_nieuw", label:"Huidige Google-rating", cat:"reviews", badge:"Reviews",
+    desc:"De meest recente gemiddelde sterrenscore op Google. Een hoge score (4,5+) bij veel reviews is een teken van een sterk en actief restaurant.",
+    tip:"Een stabiele hoge rating betekent een tevreden klantenbasis.",
+    example:"4,8" },
+  { tech:"reviews_nieuw", label:"Huidig aantal reviews", cat:"reviews", badge:"Reviews",
+    desc:"Het totale aantal Google-reviews dat het restaurant nu heeft. Hoe meer reviews, hoe groter de online aanwezigheid.",
+    tip:"Restaurants met duizenden reviews draaien duidelijk goed — dat geeft context bij het gesprek.",
+    example:"1.620 reviews" },
+  { tech:"review_groei", label:"Review-groei (totaal)", cat:"reviews", badge:"Reviews",
+    desc:"Het aantal nieuwe reviews tussen de twee meetmomenten. Geeft aan hoe actief het restaurant is geweest in die periode.",
+    tip:"Een restaurant met veel nieuwe reviews bedient actief gasten.",
+    example:"38 nieuwe reviews" },
+  { tech:"groei_per_week", label:"Groei per week", cat:"reviews", badge:"Reviews",
+    desc:"Het gemiddeld aantal nieuwe Google-reviews per week, berekend over de periode tussen de twee metingen.",
+    tip:"Hoe hoger dit getal, hoe actiever het restaurant op dit moment draait.",
+    example:"9,5 reviews per week" },
+  { tech:"platform_detected", label:"Gevonden bestelplatform", cat:"platform", badge:"Platform",
+    desc:"Het online bestel- of bezorgplatform dat op de website is aangetroffen. Dit kan een derde partij zijn (zoals Thuisbezorgd of Uber Eats) of een eigen systeem. 'Unknown' betekent dat er niets is gevonden.",
+    tip:"'Unknown' betekent dat het onbekend is of het restaurant online bestellen aanbiedt — interessant om te verifiëren.",
+    example:"Thuisbezorgd / Uber Eats / Unknown" },
+  { tech:"platform_category", label:"Soort platform", cat:"platform", badge:"Platform",
+    desc:"De categorie van het gevonden platform: een grote marktplaats (aggregator zoals Thuisbezorgd), een eigen bestelmodule op de website, of onbekend.",
+    tip:"Restaurants met een eigen bestelmodule of zonder platform zijn relevante gesprekskandidaten.",
+    example:"Aggregator / Eigen module / Onbekend" },
+  { tech:"detectie_zekerheid", label:"Betrouwbaarheid detectie", cat:"platform", badge:"Platform",
+    desc:"Hoe zeker het systeem is dat het juiste platform is herkend. 'Hoog' = duidelijk bewijs gevonden. 'Onbekend' = niets aangetroffen of onduidelijk.",
+    tip:"Bij 'Onbekend' of 'Laag' is het verstandig de website zelf kort te checken voor je belt.",
+    example:"Hoog / Laag / Onbekend" },
+  { tech:"platform_evidence", label:"Bewijs van platform", cat:"platform", badge:"Platform",
+    desc:"De specifieke aanwijzing op de website op basis waarvan het platform is herkend — bijvoorbeeld een bestelknop, een iFrame of een scriptlink.",
+    tip:"Leeg = niets gevonden. Gevuld = er is een concrete aanwijzing op de website.",
+    example:"Bestelknop gelinkt aan Thuisbezorgd / (leeg)" },
+  { tech:"reviews_band", label:"Reviewband", cat:"score", badge:"Prioriteit",
+    desc:"Een label dat aangeeft hoe groot de reviewbasis is: Laag, Gemiddeld, Sterk of Zeer sterk. Gebaseerd op het totale aantal reviews.",
+    tip:"Restaurants in 'Sterk' of 'Zeer sterk' hebben een bewezen online aanwezigheid.",
+    example:"Sterk (500–2.000) / Zeer sterk (2.000+)" },
+  { tech:"prioriteit_score", label:"Prioriteitsscore (0–100)", cat:"score", badge:"Prioriteit",
+    desc:"Een automatisch berekende score die aangeeft hoe interessant dit restaurant is. De score combineert reviewgroei, reviewband en platformstatus. 100 is maximaal.",
+    tip:"Sorteer de lijst van hoog naar laag op deze score om te beginnen bij de meest interessante restaurants.",
+    example:"100 / 72 / 62" },
+  { tech:"prioriteit_score_10", label:"Prioriteit (1–10)", cat:"score", badge:"Prioriteit",
+    desc:"Dezelfde prioriteitsscore, maar omgerekend naar een schaal van 1 tot 10. Makkelijker te lezen bij een snelle blik.",
+    tip:"Een 9 of 10 staat bovenaan. Een 5 of lager is minder urgent.",
+    example:"10 / 7 / 6" },
+  { tech:"sales_segment", label:"Salesgroep", cat:"segment", badge:"Segment",
+    desc:"De groep waartoe dit restaurant is ingedeeld op basis van groei en platformstatus. Groep 1A en 1B zijn de meest relevante restaurants voor dit kwartaal.",
+    tip:"Groep 1A = hoogste urgentie. Groep 1B = actief restaurant, platform nog onbekend of te verifiëren.",
+    example:"Groep 1A / Groep 1B" },
+  { tech:"segment_toelichting", label:"Reden van indeling", cat:"segment", badge:"Segment",
+    desc:"Een automatisch gegenereerde uitleg waarom het restaurant in deze groep is geplaatst. Geeft context bij de salesgroep.",
+    tip:"Lees dit door voor je contact opneemt — het geeft direct aanknopingspunten.",
+    example:"Actief restaurant maar bestelomgeving onbekend. Sales zoekt platform handmatig op." },
+  { tech:"datum_verwerkt", label:"Datum verwerkt", cat:"systeem", badge:"Systeem",
+    desc:"De datum waarop de gegevens van dit restaurant zijn verzameld en verwerkt. Geeft aan hoe actueel de informatie is.",
+    tip:"Controleer of de datum recent is — oudere data kan inmiddels veranderd zijn.",
+    example:"2026-03-14" },
+  { tech:"website_error", label:"Website onbereikbaar?", cat:"systeem", badge:"Systeem",
+    desc:"Geeft aan of de website bereikbaar was tijdens het verzamelen van de data. TRUE betekent dat de website niet werkte.",
+    tip:"Bij TRUE: controleer of het restaurant nog actief is voor je contact opneemt.",
+    example:"FALSE = website werkte prima / TRUE = fout" },
+  { tech:"apify_succes", label:"Data verzameld?", cat:"systeem", badge:"Systeem",
+    desc:"Geeft aan of het automatische systeem erin is geslaagd de website te scannen op platforminformatie. FALSE = geen platformdata beschikbaar.",
+    tip:"FALSE bij platform = handmatig controleren of het restaurant online bestellen aanbiedt.",
+    example:"TRUE = gelukt / FALSE = niet gelukt" },
+  { tech:"apify_error", label:"Foutmelding systeem", cat:"systeem", badge:"Systeem",
+    desc:"Als het scannen mislukt is, staat hier de technische reden. Als dit veld leeg is, is er niets misgegaan.",
+    tip:"Als je hier iets ziet staan: geef dit door aan het datateam.",
+    example:"(leeg) = geen problemen" }
+];
+
+const badgeClass = { bedrijf:"badge-bedrijf", reviews:"badge-reviews", platform:"badge-platform", score:"badge-score", segment:"badge-segment", systeem:"badge-systeem" };
+
+function render(list) {
+  const grid = document.getElementById('grid');
+  document.getElementById('count').textContent = list.length + ' van 25 kolommen';
+  if (!list.length) { grid.innerHTML = '<div class="empty">Geen kolommen gevonden</div>'; return; }
+  grid.innerHTML = list.map(c => `
+    <div class="card">
+      <div class="card-head">
+        <div class="label">${c.label}</div>
+        <span class="badge ${badgeClass[c.cat]}">${c.badge}</span>
+      </div>
+      <div class="tech">${c.tech}</div>
+      <div class="desc">${c.desc}</div>
+      ${c.tip ? `<div class="tip"><strong>Tip:</strong> ${c.tip}</div>` : ''}
+      <div class="example"><span>Voorbeeld:</span> ${c.example}</div>
+    </div>`).join('');
+}
+
+let activeCat = 'all', searchVal = '';
+function update() {
+  let list = cols;
+  if (activeCat !== 'all') list = list.filter(c => c.cat === activeCat);
+  if (searchVal) {
+    const q = searchVal.toLowerCase();
+    list = list.filter(c => c.label.toLowerCase().includes(q) || c.tech.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q) || c.tip.toLowerCase().includes(q));
+  }
+  render(list);
+}
+document.querySelectorAll('.pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCat = btn.dataset.cat;
+    update();
+  });
+});
+document.getElementById('search').addEventListener('input', e => { searchVal = e.target.value; update(); });
+render(cols);
+</script>
+</body>
+</html>
